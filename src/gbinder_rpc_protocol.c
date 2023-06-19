@@ -42,6 +42,7 @@
 
 #define BINDER_VND_HEADER GBINDER_FOURCC('V', 'N', 'D', 'R')
 #define BINDER_SYS_HEADER GBINDER_FOURCC('S', 'Y', 'S', 'T')
+#define BINDER_WIRE_FORMAT_VERSION (1)
 
 /*==========================================================================*
  * GBinderIpcProtocol callbacks (see Parcel::writeInterfaceToken in Android)
@@ -218,7 +219,8 @@ gbinder_rpc_protocol_aidl3_finish_flatten_binder(
     void* out,
     GBinderLocalObject* obj)
 {
-    *(guint32*)out = GBINDER_STABILITY_SYSTEM;
+    *(guint32*)out = GBINDER_FOURCC(GBINDER_STABILITY_SYSTEM, 0, 0,
+            BINDER_WIRE_FORMAT_VERSION);
 }
 
 static const GBinderRpcProtocol gbinder_rpc_protocol_aidl3 = {
