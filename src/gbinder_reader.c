@@ -460,6 +460,38 @@ gbinder_reader_read_parcelable(
     return NULL;
 }
 
+/*
+ * Read the AIDL parcelable header, and on success, make a copy
+ * of reader limited to parcelable size, then advance
+ * the original reader past the parcelable.
+ */
+gboolean
+gbinder_reader_parcelable_reader(
+    GBinderReader* reader,
+    GBinderReader* dest_reader)
+{
+    guint32 non_null, payload_size = 0;
+
+    if (gbinder_reader_read_uint32(reader, &non_null) && non_null &&
+        gbinder_reader_read_uint32(reader, &payload_size) &&
+        payload_size >= sizeof(payload_size)) {
+        GBinderReaderPriv* p = gbinder_reader_cast(reader);
+
+        payload_size -= sizeof(payload_size);
+        if (p->ptr + payload_size <= p->end) {
+            /* Success */
+            gbinder_reader_copy(dest_reader, reader);
+
+            GBinderReaderPriv* p_dest = gbinder_reader_cast(dest_reader);
+            p_dest->end = p_dest->ptr + payload_size;
+
+            p->ptr += payload_size;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 /* Helper for gbinder_reader_read_hidl_struct() macro */
 const void*
 gbinder_reader_read_hidl_struct1(
